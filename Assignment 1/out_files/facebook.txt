@@ -1,0 +1,16 @@
+Number of nodes: 2984
+Number of edges: 47769
+Number of nodes with degree=7: 112
+Node id(s) with highest degree: 107
+Approximate full diameter: 15.0000
+Approximate effective diameter: 7.3014
+Fraction of nodes in largest connected component: 0.9893
+Number of edge bridges: 89
+Number of articulation points: 58
+Average clustering coefficient: 0.5720
+Number of triads: 633088
+Clustering coefficient of random node 3455: 0.5101
+Number of triads random node 359 participates: 106
+Top 5 nodes by degree centrality: 107 3437 2543 2347 1663
+Top 5 nodes by closeness centrality: 107 1577 1534 1666 1165
+Top 5 nodes by betweenness centrality: 107 1085 3437 1577 119

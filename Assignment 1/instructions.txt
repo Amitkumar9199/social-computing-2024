@@ -1,0 +1,130 @@
+Name: Amit Kumar
+Roll Number: 20CS30003
+Assignment: 1, Social Computing
+
+## Tested on System:
+    Ubuntu 22.04.4 LTS, 
+    Intel® Core™ i5-9300H CPU @ 2.40GHz × 8, 
+    python 3.7
+    snap-stanford==6.0.0
+
+## Installation steps for python 3.7 and snap-stanford and other required libraries
+    # 1. Install Python 3.7:
+    sudo add-apt-repository ppa:deadsnakes/ppa
+    sudo apt update
+    sudo apt install python3.7
+    sudo apt install python3.7-distutils
+
+    # 2. Install pip for Python 3.7:
+    curl https://bootstrap.pypa.io/pip/3.7/get-pip.py -o get-pip.py
+    sudo python3.7 get-pip.py
+
+    # 3. Install snap-stanford for Python 3.7:
+    python3.7 -m pip install snap-stanford
+
+    # 4. Reinstall certain Libraries for Python 3.7:
+    # Since we are using a different version of python , we might need to reinstall certain libraries as well
+    python3.7 -m pip uninstall matplotlib Pillow numpy
+    python3.7 -m pip install matplotlib Pillow numpy
+
+## Problem 1: Dataset Preparation (gen_graphs.py)
+    - I assume that facebook_combined.txt" and "soc-sign-epinions.txt" files are present
+      in 'input_graphs' folder
+    - How to Run: 
+        # Time Taken - 5 seconds
+        python3.7 gen_graphs.py
+    - output is saved to 'networks' folder 
+
+Problem 2: Familiarizing with the SNAP Libarary (gen_structure.py)
+    - I'm generating images by two methods: 
+        1. by matplot lib present in 'mat_plot' folder
+        2. other by snap Libarary present in 'plots' folder
+    - How to Run: 
+        # (takes 60 seconds to run)
+        python3.7 gen_structure.py networks/facebook.elist  
+
+        # (takes 240 seconds to run)
+        python3.7 gen_structure.py networks/epinions.elist
+        
+        # (takes 25 seconds to run)
+        python3.7 gen_structure.py networks/random.elist
+
+        # (takes 25 seconds to run)
+        python3.7 gen_structure.py networks/smallworld.elist 
+
+
+Problem 3: Compute Centrality Metrics (gen_centrality.py)
+    - output in “centralities” folder. 
+        - output for each graph is stored here within its folder(graph name).
+
+    - I'm taking weights of edges of graph(other than epinion graph) as 1
+
+    - How to Run: 
+        # Time taken:  139.1487534046173 seconds
+        python3.7 gen_centrality.py networks/facebook.elist
+
+        # Time taken:  762.1571950912476 seconds
+        python3.7 gen_centrality.py networks/epinions.elist
+
+        # Time taken:  49.72632455825806 seconds
+        python3.7 gen_centrality.py networks/random.elist 
+
+        Time taken:  39.82067918777466 seconds
+        python3.7 gen_centrality.py networks/smallworld.elist 
+
+        Here’s a brief discussion on the design decisions and novel methods used for each centrality computation:
+
+    ### 1. Closeness Centrality
+    - heuristic: 
+        1.  As per assignment, closeness centrality[node] = (n - 1) / total_distance
+            But we need a normalisation facter, because we don't visit all nodes (graph may be disconnected)
+            So, let centrality = (cnt-1)/total_distance, where cnt is the number of nodes visited
+            then for normalisation, centrality = centrality*(cnt-1)/(n-1)
+            this way if cnt is n, then centrality = (n-1)/total_distance
+            otherwise centrality will get normalised as per the number of nodes visited
+
+        2. if total_distance is 0, closeness centrality is 0
+
+    - Design Decision: 
+        1. The BFS (Breadth-First Search) algorithm was used to compute the shortest paths from each node to all other nodes.
+           This was chosen for its simplicity and efficiency when dealing with unweighted graphs.
+
+    - Justification for normalisation:
+        1. Since graph can be disconnected so taking the count of nodes visited by 'node' for 
+           normalisation is valid. Otherise values will be very high. E.g. if only two nodes are 
+           connected then  (n-1)/tot_dist = (n-1)/2 which is very high . So, normalisation is 
+           essential based on number of nodes visited.
+
+    ### 2. Betweenness Centrality
+    - Design Decision: 
+        1. Brandes' Algorithm was implemented, as it optimizes the calculation of betweenness centrality
+           for all nodes by performing a single-source shortest path calculation for each node.
+
+    - Justification: 
+        1. Brandes require O(n + m) space and run in O(n*m) and O(n*m + n^2 * log n) time on 
+            unweighted and weighted networks, respectively. 
+        2. Brandes' algorithm reduces the time complexity  of betweenness centrality computation 
+            from (O(n^3)) to (O(n^m)) for unweighted graphs, making it suitable for large datasets.
+
+    - Novelty: 
+        1. Dependency accumulation was done during backtracking from the stack to efficiently 
+           compute the number of shortest paths that pass through each node.
+
+    - Note: I have attached the reference paper(for algorithm) in the submission zip file.
+
+    ### 3. Biased PageRank
+    - bias vector- d 
+        1. I have taken d[node] =  d[node] = abs(sum(weights of edges to node))/mx
+        where mx is the maximum of all d[i] for all nodes i
+    - Design Decision: 
+        1. A bias vector was introduced in the PageRank algorithm to account for the signs of the 
+        edges in the signed graph. This adjusts the rank values based on whether edges are 
+        positive or negative (sum of weights). 
+    - Justification: 
+        1. The use of a bias vector ensures that negative edges reduce the PageRank value, 
+        thus providing a more nuanced ranking in signed networks.
+    - Novelty: 
+        1. The bias factor (d[node]) is normalized and factored into the PageRank computation, 
+        creating a variation of the algorithm that better handles signed relationships and 
+        their influence on node importance.
+
